@@ -229,7 +229,6 @@ class EmployeeSystem:
                 print("Неверный выбор. Попробуйте снова.")
 
 
-# Запуск основной программы
 if __name__ == "__main__":
     system = EmployeeSystem()
     system.show_menu()
