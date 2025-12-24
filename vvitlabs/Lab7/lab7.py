@@ -1,0 +1,230 @@
+from typing import List, Optional
+
+
+class EmployeeAttributes:
+    def __init__(self, name: str, id: int):
+        self.name = name
+        self.id = id
+
+    def get_info(self) -> str:
+        return f"ID: {self.id}, Имя: {self.name}"
+
+    def __str__(self):
+        return self.get_info()
+
+
+class Employee(EmployeeAttributes):
+    pass
+
+
+class Manager(EmployeeAttributes):
+    def __init__(self, name: str, id: int, department: str):
+        EmployeeAttributes.__init__(self, name, id)
+        self.department = department
+        self.subordinates: List[Employee] = []
+
+    def manage_project(self) -> str:
+        return f"Менеджер {self.name} управляет проектами отдела {self.department}"
+
+    def add_subordinate(self, subordinate: Employee):
+        self.subordinates.append(subordinate)
+        return f"Сотрудник {subordinate.name} добавлен в команду."
+
+    def get_team_info(self) -> str:
+        if not self.subordinates:
+            return "В команде нет сотрудников."
+        return '\n'.join([f"- {emp.get_info()}" for emp in self.subordinates])
+
+
+class Technician(EmployeeAttributes):
+    def __init__(self, name: str, id: int, specialization: str):
+        EmployeeAttributes.__init__(self, name, id)
+        self.specialization = specialization
+
+    def perform_maintenance(self) -> str:
+        return f"Техник {self.name} выполняет техническое обслуживание оборудования {self.specialization}"
+
+    def get_info(self) -> str:
+        return f"ID: {self.id}, Имя: {self.name}, Специализация: {self.specialization}"
+
+
+class TechManager(Manager, Technician):
+    def __init__(self, name: str, id: int, department: str, specialization: str):
+        Manager.__init__(self, name, id, department)
+        Technician.__init__(self, name, id, specialization)
+
+    def __str__(self):
+        return (
+            f"TechManager: {self.get_info()}, Отдел: {self.department}, Специализация: {self.specialization}"
+        )
+
+
+class EmployeeSystem:
+    def __init__(self):
+        self.employees: List[Employee] = []
+        self.managers: List[Manager] = []
+
+    def input_employee_data(self, type_: str) -> dict:
+        data = {}
+        data['name'] = input(f"Введите имя {type_}: ")
+        while True:
+            try:
+                data['id'] = int(input(f"Введите ID {type_}: "))
+                break
+            except ValueError:
+                print("Ошибка! ID должен быть целым числом.")
+        return data
+
+    def input_employee(self):
+        data = self.input_employee_data("сотрудника")
+        employee = Employee(data['name'], data['id'])
+        self.employees.append(employee)
+        print(f"Сотрудник {data['name']} успешно добавлен!")
+        return employee
+
+    def input_manager(self):
+        data = self.input_employee_data("менеджера")
+        department = input("Введите отдел менеджера: ")
+        manager = Manager(data['name'], data['id'], department)
+        self.employees.append(manager)
+        self.managers.append(manager)
+        print(f"Менеджер {data['name']} успешно добавлен!")
+        return manager
+
+    def input_technician(self):
+        data = self.input_employee_data("техника")
+        specialization = input("Введите специализацию техника: ")
+        technician = Technician(data['name'], data['id'], specialization)
+        self.employees.append(technician)
+        print(f"Техник {data['name']} успешно добавлен!")
+        return technician
+
+    def input_tech_manager(self):
+        data = self.input_employee_data("TechManager")
+        department = input("Введите отдел TechManager: ")
+        specialization = input("Введите специализацию TechManager: ")
+        tech_manager = TechManager(data['name'], data['id'], department, specialization)
+        self.employees.append(tech_manager)
+        self.managers.append(tech_manager)
+        print(f"TechManager {data['name']} успешно добавлен!")
+        return tech_manager
+
+    def add_employee_to_manager(self):
+        if not self.managers:
+            print("Нет доступных менеджеров!")
+            return
+
+        print("\n=== Выберите менеджера ===")
+        for i, manager in enumerate(self.managers, 1):
+            print(f"{i}. {manager.name} ({manager.department})")
+
+        try:
+            mgr_choice = int(input("Выберите номер менеджера: ")) - 1
+            selected_manager = self.managers[mgr_choice]
+        except (ValueError, IndexError):
+            print("Неверный выбор!")
+            return
+
+        print("\n=== Выберите сотрудника для команды ===")
+        available_employees = [
+            emp for emp in self.employees
+            if emp not in selected_manager.subordinates and emp != selected_manager
+        ]
+        for i, emp in enumerate(available_employees, 1):
+            print(f"{i}. {emp.get_info()}")
+
+        try:
+            emp_choice = int(input("Выберите номер сотрудника: ")) - 1
+            selected_employee = available_employees[emp_choice]
+        except (ValueError, IndexError):
+            print("Неверный выбор!")
+            return
+
+        result = selected_manager.add_subordinate(selected_employee)
+        print(result)
+
+    def show_all_employees(self):
+        if not self.employees:
+            print("Нет сотрудников в системе.")
+            return
+
+        print("\n=== Все сотрудники ===")
+        for i, employee in enumerate(self.employees, 1):
+            print(f"{i}. {employee.get_info()}")
+
+    def show_team_info(self):
+        if not self.managers:
+            print("Нет менеджеров в системе.")
+            return
+
+        print("\n=== Информация о командах ===")
+        for manager in self.managers:
+            print(f"Команда менеджера {manager.name} ({manager.department}):\n{manager.get_team_info()}")
+
+    def perform_actions(self):
+        if not self.employees:
+            print("Нет сотрудников в системе.")
+            return
+
+        print("\n=== Выберите сотрудника для выполнения действия ===")
+        for i, employee in enumerate(self.employees, 1):
+            print(f"{i}. {employee.get_info()}")
+
+        try:
+            choice = int(input("Выберите номер сотрудника: ")) - 1
+            selected_employee = self.employees[choice]
+        except (ValueError, IndexError):
+            print("Неверный выбор!")
+            return
+
+        if isinstance(selected_employee, Manager):
+            print(f"{selected_employee.manage_project()}")
+        elif isinstance(selected_employee, Technician):
+            print(f"{selected_employee.perform_maintenance()}")
+        else:
+            print("Этот сотрудник не имеет особых действий.")
+
+    def show_menu(self):
+        while True:
+            print("\n" + "=" * 50)
+            print("     СИСТЕМА УПРАВЛЕНИЯ СОТРУДНИКАМИ")
+            print("=" * 50)
+            print("1. Добавить сотрудника")
+            print("2. Добавить менеджера")
+            print("3. Добавить техника")
+            print("4. Добавить TechManager")
+            print("5. Просмотреть всех сотрудников")
+            print("6. Назначить сотрудника менеджеру")
+            print("7. Просмотреть информацию о командах")
+            print("8. Выполнить специальные действия сотрудников")
+            print("0. Выход")
+            print("-" * 50)
+
+            choice = input("Выберите действие: ")
+
+            if choice == '1':
+                self.input_employee()
+            elif choice == '2':
+                self.input_manager()
+            elif choice == '3':
+                self.input_technician()
+            elif choice == '4':
+                self.input_tech_manager()
+            elif choice == '5':
+                self.show_all_employees()
+            elif choice == '6':
+                self.add_employee_to_manager()
+            elif choice == '7':
+                self.show_team_info()
+            elif choice == '8':
+                self.perform_actions()
+            elif choice == '0':
+                print("До свидания!")
+                break
+            else:
+                print("Неверный выбор. Попробуйте снова.")
+
+
+if __name__ == "__main__":
+    system = EmployeeSystem()
+    system.show_menu()
