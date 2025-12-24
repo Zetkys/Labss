@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 
-class Employee:
+class EmployeeAttributes:
     def __init__(self, name: str, id: int):
         self.name = name
         self.id = id
@@ -13,9 +13,13 @@ class Employee:
         return self.get_info()
 
 
-class Manager(Employee):
+class Employee(EmployeeAttributes):
+    pass
+
+
+class Manager(EmployeeAttributes):
     def __init__(self, name: str, id: int, department: str):
-        super().__init__(name, id)
+        EmployeeAttributes.__init__(self, name, id)
         self.department = department
         self.subordinates: List[Employee] = []
 
@@ -32,9 +36,9 @@ class Manager(Employee):
         return '\n'.join([f"- {emp.get_info()}" for emp in self.subordinates])
 
 
-class Technician(Employee):
+class Technician(EmployeeAttributes):
     def __init__(self, name: str, id: int, specialization: str):
-        super().__init__(name, id)
+        EmployeeAttributes.__init__(self, name, id)
         self.specialization = specialization
 
     def perform_maintenance(self) -> str:
@@ -61,7 +65,6 @@ class EmployeeSystem:
         self.managers: List[Manager] = []
 
     def input_employee_data(self, type_: str) -> dict:
-
         data = {}
         data['name'] = input(f"Введите имя {type_}: ")
         while True:
@@ -80,7 +83,6 @@ class EmployeeSystem:
         return employee
 
     def input_manager(self):
-
         data = self.input_employee_data("менеджера")
         department = input("Введите отдел менеджера: ")
         manager = Manager(data['name'], data['id'], department)
@@ -90,7 +92,6 @@ class EmployeeSystem:
         return manager
 
     def input_technician(self):
-
         data = self.input_employee_data("техника")
         specialization = input("Введите специализацию техника: ")
         technician = Technician(data['name'], data['id'], specialization)
@@ -109,7 +110,6 @@ class EmployeeSystem:
         return tech_manager
 
     def add_employee_to_manager(self):
-
         if not self.managers:
             print("Нет доступных менеджеров!")
             return
@@ -144,7 +144,6 @@ class EmployeeSystem:
         print(result)
 
     def show_all_employees(self):
-
         if not self.employees:
             print("Нет сотрудников в системе.")
             return
@@ -154,7 +153,6 @@ class EmployeeSystem:
             print(f"{i}. {employee.get_info()}")
 
     def show_team_info(self):
-
         if not self.managers:
             print("Нет менеджеров в системе.")
             return
@@ -164,7 +162,6 @@ class EmployeeSystem:
             print(f"Команда менеджера {manager.name} ({manager.department}):\n{manager.get_team_info()}")
 
     def perform_actions(self):
-
         if not self.employees:
             print("Нет сотрудников в системе.")
             return
@@ -188,7 +185,6 @@ class EmployeeSystem:
             print("Этот сотрудник не имеет особых действий.")
 
     def show_menu(self):
-
         while True:
             print("\n" + "=" * 50)
             print("     СИСТЕМА УПРАВЛЕНИЯ СОТРУДНИКАМИ")
